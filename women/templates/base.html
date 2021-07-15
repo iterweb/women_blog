@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+{% load static %}
+{% load cache %}
+{% load category_tags %}
+<html>
+<head>
+	<title>{{title}}</title>
+	<link type="text/css" href="{% static 'women/css/styles.css' %}" rel="stylesheet" />
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<link rel="shortcut icon" href="{% static 'women/images/main.ico' %}" type="image/x-icon"/>
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body>
+<table class="table-page" border=0 cellpadding="0" cellspacing="0">
+	<tr><td valign=top>
+		{% block mainmenu %}
+		<div class="header">
+			<ul id="mainmenu" class="mainmenu">
+				<li class="logo"><a href="{% url 'home' %}"><div class="logo"></div></a></li>
+				{% for m in menu %}
+					<li><a href="{% url m.url_name %}">{{m.title}}</a></li>
+				{% endfor %}
+				{% if request.user.is_authenticated %}
+					<li class="last">Вы вошли как: {{user.username}} | <a href="{% url 'logout' %}">Выйти</a></li>
+				{% else %}
+					<li class="last"><a href="{% url 'register' %}">Регистрация</a> | <a href="{% url 'login' %}">Войти</a></li>
+				{% endif %}
+			</ul>
+			<div class="clear"></div>
+		</div>
+		{% endblock mainmenu %}
+
+
+		<table class="table-content" border=0 cellpadding="0" cellspacing="0">
+			<tr>
+				<!-- Sidebar слева -->
+				<td valign="top" class="left-chapters">
+					<ul id="leftchapters">
+						{% if cat_selected == 0 %}
+							<li class="selected">Все категории</li>
+						{% else %}
+							<li><a href="{% url 'home' %}">Все категории</a></li>
+						{% endif %}
+						<!-- Категории -->
+						{% show_categories cat_selected %}
+						<!-- Конец Категории -->
+
+						<li>
+							<form action="{% url 'search' %}" method="get">
+								<input class="search-input" name="q" type="text" placeholder="Поиск по сайту...">
+								<button class="search-button" type="submit">Искать</button>
+							</form>
+						</li>
+
+						<li class="share">
+							<p>GitHub</p>
+							<a class="share-yt" href="https://github.com/pro100git" target="_blank" rel="nofollow"></a>
+						</li>
+					</ul>
+				</td>
+				<!-- Конец Sidebar'а -->
+				<td valign="top" class="content">
+					<!-- Хлебные крошки -->
+					{% block breadcrumbs %}
+					{% endblock %}
+
+					<!-- Блок контента -->
+					<div class="content-text">
+							{% block content %}
+							{% endblock %}
+						<!-- Блок пагинации -->
+						{% if page_obj.has_other_pages %}
+							<nav class="list-pages">
+								<ul>
+									{% if page_obj.has_previous %}
+										<li class="page-num">
+											<a href="?{{search}}page={{page_obj.previous_page_number}}"><=</a>
+										</li>
+									{% endif %}
+
+									{% for p in paginator.page_range %}
+										{% if page_obj.number == p %}
+											<li class="page-num page-num-selected">{{p}}</li>
+										{% elif p >= page_obj.number|add:-2 and p <= page_obj.number|add:2 %}
+											<li class="page-num">
+												<a href="?{{search}}page={{p}}">{{p}}</a>
+											</li>
+										{% endif %}
+									{% endfor %}
+
+									{% if page_obj.has_next %}
+										<li class="page-num">
+											<a href="?{{search}}page={{page_obj.next_page_number}}">=></a>
+										</li>
+									{% endif %}
+								</ul>
+							</nav>
+						{% endif %}
+						<!-- Конец блока пагинации -->
+
+					</div>
+					<!-- Конец блока контента -->
+
+				</td></tr></table>
+	</td></tr>
+	<!-- Footer -->
+	<tr><td valign=top>
+		<div id="footer">
+			<p>&copy; 2021 <a href="https://github.com/pro100git" target="_blank" rel="nofollow">pro100git</a></p>
+		</div>
+	</td></tr></table>
+<!-- Конец footer'а и страницы -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script type="text/javascript">
+	$(document).ready(function (event) {
+		$(document).on('click', '#like', function (event) {
+			event.preventDefault();
+			let pk = $(this).attr('value');
+			$.ajax({
+				type: 'POST',
+				url: '{% url "like_post" %}',
+				data: {'post_id': pk, 'csrfmiddlewaretoken': '{{csrf_token}}'},
+				dataType: 'json',
+				success: function (response) {
+					$('#like-section').html(response['form'])
+					console.log($('#like-section').html(response['form']))
+				},
+				error: function (rs, e) {
+					console.log(rs.responseText);
+				},
+			});
+		});
+	});
+</script>
+</body>
+</html>

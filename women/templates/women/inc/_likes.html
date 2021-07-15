@@ -1,0 +1,16 @@
+{% if request.user.is_authenticated %}
+<form action="{% url 'like_post' %}" method="post">
+  {% csrf_token %}
+  {% if is_liked %}
+  <!--
+  <button type="submit" id="like" name="post_id" value="{{ post.id }}" class="search-button">Не нравится</button>
+  -->
+  <p><b>Вам понравился пост!</b> Всего лайков: {{post.likes.count}}</b></p>
+  {% else %}
+  <button type="submit" id="like" name="post_id" value="{{ post.id }}" class="search-button">Нравится - {{post.likes.count}}</button>
+  {% endif %}
+</form>
+{% else %}
+<p>Всего лайков: {{post.likes.count}}</b></p>
+<p>Чтобы оценить этот пост <a href="{% url 'login' %}">войдите</a> или <a href="{% url 'register' %}">зарегистрируйтесь</a> на сайте.</p>
+{% endif %}
